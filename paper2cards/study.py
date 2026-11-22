@@ -1,8 +1,8 @@
 """Extractive baseline. A generator consumes sections and returns a StudySet."""
 
 from dataclasses import dataclass
-import re
 
+from .extraction import definition, sentences
 from .source import Section
 
 
@@ -45,25 +45,6 @@ class StudySet:
     skipped_pages: list[int]
 
 
-CHINESE = re.compile(r"^([\u3400-\u9fffA-Za-z0-9（）()·-]{1,24}?)(?:是指|指的是|是(?!否|不是)|：)\s*(.{3,})$")
-ENGLISH = re.compile(r"^(?:An? |The )?([A-Za-z][\w -]{0,42}?)\s+(?:is defined as|refers to|is|are)\s+(.{4,})$", re.I)
-
-
-def sentences(text: str, title: str):
-    lines = [line.strip() for line in text.splitlines() if line.strip()]
-    if lines and lines[0].casefold() == title.casefold():
-        lines = lines[1:]
-    elif (len(lines) > 1 and len(lines[0]) <= 40
-          and not re.search(r"[。！？.!?：:]", lines[0])
-          and (CHINESE.fullmatch(lines[1]) or ENGLISH.fullmatch(lines[1]))):
-        lines = lines[1:]
-    joined = " ".join(lines)
-    joined = re.sub(r"(?<=[\u3400-\u9fff]) +(?=[\u3400-\u9fff])", "", joined)
-    for phrase in re.split(r"(?<=[。！？])\s*|(?<=[.!?])\s+", joined):
-        if len(phrase.strip()) >= 5:
-            yield phrase.strip()
-
-
 def generate(document: str, sections: list[Section]) -> StudySet:
     notes = []
     skipped = []
@@ -77,15 +58,15 @@ def generate(document: str, sections: list[Section]) -> StudySet:
                 skipped.append(page.number)
             for quote in sentences(page.text, section.title):
                 evidence = Evidence(page.number, quote)
-                if len(excerpts) < 2:
+                if len(quote) >= 5 and len(excerpts) < 2:
                     excerpts.append(evidence)
-                match = CHINESE.fullmatch(quote) or ENGLISH.fullmatch(quote)
+                match = definition(quote)
                 if match:
-                    term, definition = match.groups()
+                    term, meaning = match
                     key = term.casefold()
                     if key not in seen:
                         seen.add(key)
-                        local.append(Concept(term, definition, evidence))
+                        local.append(Concept(term, meaning, evidence))
         concepts.extend(local)
         notes.append(Notes(section.title, section.pages[0].number, section.pages[-1].number, excerpts, local))
 
