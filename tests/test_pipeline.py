@@ -1,5 +1,5 @@
 from contextlib import redirect_stderr, redirect_stdout
-from io import StringIO
+from io import BytesIO, StringIO, TextIOWrapper
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -16,6 +16,15 @@ SAMPLE = Path(__file__).resolve().parents[1] / "examples" / "data-structures.pdf
 
 
 class PipelineTests(unittest.TestCase):
+    def test_legacy_windows_stdout(self):
+        with TemporaryDirectory() as temp, BytesIO() as raw:
+            output = Path(temp) / "笔记"
+            with TextIOWrapper(raw, encoding="cp1252", write_through=True) as stream:
+                with redirect_stdout(stream):
+                    self.assertEqual(main([str(SAMPLE), "-o", str(output)]), 0)
+                self.assertIn(b"Generated 2 sections and 8 cards", raw.getvalue())
+            self.assertTrue((output / "cards.json").is_file())
+
     def test_example_provenance_and_export(self):
         with TemporaryDirectory() as temp:
             output = Path(temp) / "notes"

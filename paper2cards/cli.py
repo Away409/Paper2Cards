@@ -19,7 +19,12 @@ def main(argv: list[str] | None = None) -> int:
     except (OSError, ValueError) as exc:
         print(f"Paper2Cards: {exc}", file=sys.stderr)
         return 1
-    print(f"已生成 {len(study.sections)} 节笔记、{len(study.cards)} 张卡片：{output}")
+    sections, cards = len(study.sections), len(study.cards)
+    try:
+        print(f"已生成 {sections} 节笔记、{cards} 张卡片：{output}")
+    except UnicodeEncodeError:
+        # Redirected stdout on Windows may use a legacy code page.
+        print(f"Generated {sections} sections and {cards} cards in {ascii(str(output))}")
     if study.skipped_pages:
         print("未提取到文字的页码：" + "、".join(map(str, study.skipped_pages)), file=sys.stderr)
     return 0
