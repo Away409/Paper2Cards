@@ -17,3 +17,9 @@ jobs:
       - run: python -m pip install .
       - run: python -m unittest discover -s tests -v
       - run: paper2cards examples/data-structures.pdf
+      - run: paper2cards tests/fixtures/v0.1.0-cards.json -o output/legacy
+      - if: matrix.python == '3.13'
+        run: python -m pip install playwright
+      - if: matrix.python == '3.13'
+        name: Exercise offline review in Chrome or Edge
+        run: python tests/browser_review.py --channel ${{ runner.os == 'Windows' && 'msedge' || 'chrome' }} output/legacy/review.html output/data-structures/review.html

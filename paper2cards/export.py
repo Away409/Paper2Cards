@@ -1,10 +1,11 @@
-"""Publish both UTF-8 outputs together in a new directory."""
+"""Publish UTF-8 outputs together in a new directory."""
 
 from dataclasses import asdict
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from .review import review_html
 from .study import StudySet
 
 
@@ -36,13 +37,21 @@ def markdown(study: StudySet) -> str:
 
 
 def export(study: StudySet, output: Path) -> None:
+    data = {"schema_version": 1, **asdict(study)}
+    publish(output, {
+        "notes.md": markdown(study),
+        "cards.json": json.dumps(data, ensure_ascii=False, indent=2) + "\n",
+        "review.html": review_html(data),
+    })
+
+
+def publish(output: Path, documents: dict[str, str]) -> None:
     if output.exists():
         raise ValueError(f"输出目录已存在，请选择新目录：{output}")
     output.parent.mkdir(parents=True, exist_ok=True)
     with TemporaryDirectory(dir=output.parent) as staging:
         bundle = Path(staging) / "bundle"
         bundle.mkdir()
-        (bundle / "notes.md").write_text(markdown(study), encoding="utf-8")
-        data = {"schema_version": 1, **asdict(study)}
-        (bundle / "cards.json").write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        for name, content in documents.items():
+            (bundle / name).write_text(content, encoding="utf-8")
         bundle.rename(output)

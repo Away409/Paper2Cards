@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+<title>Paper2Cards · 离线自测</title>
+<style>
+:root{color-scheme:light;--paper:#f6f4ed;--card:#fffef9;--ink:#202e2a;--muted:#52655d;--green:#244f43;--line:#c7d0c5;--red:#963e32}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 "DM Sans","Microsoft YaHei",system-ui,sans-serif}
+main,header{max-width:900px;margin:auto;padding:0 24px}
+header{display:flex;align-items:center;justify-content:space-between;gap:1em;padding-top:30px;padding-bottom:16px;border-bottom:2px solid var(--green)}
+.brand,h1,h2{font-family:"Source Han Serif SC","Songti SC",SimSun,Georgia,serif}
+.brand{font:bold 26px Georgia,serif;letter-spacing:-1px;color:var(--green)}
+main{padding-top:clamp(32px,6vw,68px);padding-bottom:48px}
+h1{font-size:clamp(30px,5vw,48px);letter-spacing:-.035em;margin:0 0 8px;line-height:1.25}
+h2{font-size:clamp(24px,4vw,33px);line-height:1.5;margin:16px 0 24px}
+h1,h2,p,button,blockquote,summary{overflow-wrap:anywhere}
+.source,.meta{color:var(--muted);font-size:.92rem}
+.source{margin:0 0 28px}
+.panel{background:var(--card);padding:clamp(22px,4.5vw,46px);border:1px solid var(--line);border-top:4px solid var(--green);border-radius:4px}
+label{display:block;font-weight:bold;margin-bottom:6px}
+select,button{font:inherit;border-radius:4px;border:1px solid var(--line);padding:10px 16px;background:var(--card);color:var(--ink);max-width:100%}
+select{width:min(100%,480px)} button,select,summary{cursor:pointer}
+button:hover:not(:disabled){border-color:var(--green);background:#eaf0e8}
+button:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #bb792f;outline-offset:3px}
+button:disabled{cursor:default}
+button.primary{background:var(--green);color:#fff;border-color:var(--green)}
+button.primary:hover:not(:disabled){background:#183b32} button.primary:disabled{opacity:.55}
+.row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:24px}
+progress{display:block;width:100%;height:6px;accent-color:var(--green);margin:12px 0 25px}
+#choices{display:grid;gap:9px}.option{text-align:left}
+.option.right{background:#e3eee4;border-color:var(--green)}.option.wrong{background:#f6e9e5;border-color:var(--red)}
+#feedback{font-weight:bold}
+blockquote{margin:10px 0 0;padding:10px 16px;border-left:3px solid var(--line);white-space:pre-wrap}
+details{margin:16px 0;color:var(--muted)}
+[hidden]{display:none!important}
+</style>
+<header><span class="brand" lang="en">Paper2Cards</span><span>离线自测</span></header>
+<main>
+<h1>讲义自测</h1>
+<p class="source" id="document"></p>
+<noscript>请启用浏览器的 JavaScript 后进行自测。</noscript>
+<section class="panel" id="setup">
+<label for="scope">选择章节</label><select id="scope"></select>
+<p id="counts" class="meta" aria-live="polite"></p>
+<button type="button" id="start" class="primary">开始自测</button>
+</section>
+<section class="panel" id="quiz" hidden>
+<div class="row meta"><span id="chapter"></span><span id="counter"></span></div>
+<progress id="progress" aria-label="本轮已完成题数"></progress>
+<h2 tabindex="-1" id="question"></h2>
+<div id="choices"></div>
+<button id="reveal" class="primary">查看答案</button>
+<p id="feedback" role="status"></p>
+<details id="evidence" hidden><summary id="citation"></summary><blockquote id="quote"></blockquote></details>
+<div class="actions" id="grade" hidden><button id="known">已掌握</button><button id="missed">需重练</button></div>
+<button id="next" class="primary" hidden>下一题</button>
+</section>
+<section class="panel" id="finish" hidden>
+<h2 id="result" tabindex="-1">本轮完成</h2><p id="summary"></p>
+<div class="actions"><button id="retry" class="primary">重练错题</button><button id="reset">重新选题</button></div>
+</section>
+</main>
+<script type="application/json" id="deck">__PAPER2CARDS_DATA__</script>
+<script>
+"use strict";
+const deck = JSON.parse(document.getElementById("deck").textContent);
+const el = id => document.getElementById(id);
+const scope = el("scope");
+const all = deck.cards;
+let round = [], errors = [], index = 0, graded = false;
+
+el("document").textContent = deck.document;
+scope.add(new Option("全部章节", "all"));
+deck.chapters.forEach((section, i) => {
+  const range = section.first === section.last ? section.first : section.first + "–" + section.last;
+  scope.add(new Option(section.title + " · 第 " + range + " 页", String(i)));
+});
+function selected() {
+  return scope.value === "all" ? all : all.filter(card => card.chapter === Number(scope.value));
+}
+function updateCounts() {
+  const cards = selected();
+  const qa = cards.filter(card => card.kind === "qa").length;
+  el("counts").textContent = cards.length
+    ? qa + " 张问答卡 · " + (cards.length - qa) + " 道选择题"
+    : "这个范围内没有可练习的卡片。";
+  el("start").disabled = !cards.length;
+}
+function show(panel) {
+  for (const id of ["setup", "quiz", "finish"]) el(id).hidden = id !== panel;
+}
+function begin(cards) {
+  round = cards.slice();
+  errors = [];
+  index = 0;
+  show("quiz");
+  renderCard();
+}
+function renderCard() {
+  const card = round[index];
+  graded = false;
+  el("chapter").textContent = deck.chapters[card.chapter].title + " · " + (card.kind === "qa" ? "问答" : "单选");
+  el("counter").textContent = (index + 1) + " / " + round.length;
+  el("progress").max = round.length;
+  el("progress").value = index;
+  el("question").textContent = card.question;
+  el("choices").replaceChildren();
+  el("reveal").hidden = card.kind !== "qa";
+  el("feedback").textContent = "";
+  el("evidence").open = false;
+  el("evidence").hidden = el("grade").hidden = el("next").hidden = true;
+  el("citation").textContent = "查看原文 · 第 " + card.page + " 页";
+  el("quote").textContent = card.quote;
+  if (card.kind === "mcq") {
+    card.options.forEach((option, i) => {
+      const button = document.createElement("button");
+      button.className = "option";
+      button.textContent = String.fromCharCode(65 + i) + ". " + option;
+      button.onclick = () => {
+        if (graded) return;
+        for (const [j, item] of Array.from(el("choices").children).entries()) {
+          item.disabled = true;
+          if (card.options[j] === card.answer) item.classList.add("right");
+        }
+        const correct = option === card.answer;
+        if (!correct) button.classList.add("wrong");
+        record(correct, correct ? "回答正确" : "正确答案：" + card.answer);
+      };
+      el("choices").append(button);
+    });
+  }
+  el("question").focus();
+}
+function record(correct, message) {
+  if (graded) return;
+  graded = true;
+  if (!correct) errors.push(round[index]);
+  el("progress").value = index + 1;
+  el("grade").hidden = true;
+  el("feedback").textContent = message;
+  el("evidence").hidden = el("next").hidden = false;
+  el("next").textContent = index + 1 === round.length ? "查看结果" : "下一题";
+  el("next").focus();
+}
+el("reveal").onclick = () => {
+  el("reveal").hidden = true;
+  el("feedback").textContent = "参考答案：" + round[index].answer;
+  el("evidence").hidden = el("grade").hidden = false;
+  el("known").focus();
+};
+el("known").onclick = () => record(true, "已掌握 · " + round[index].answer);
+el("missed").onclick = () => record(false, "已加入重练 · " + round[index].answer);
+el("next").onclick = () => {
+  if (!graded) return;
+  if (++index < round.length) return renderCard();
+  show("finish");
+  el("summary").textContent = "共 " + round.length + " 题 · 答对或自评掌握 " + (round.length - errors.length) + " 题 · 需重练 " + errors.length + " 题";
+  el("retry").hidden = !errors.length;
+  el("result").focus();
+};
+scope.onchange = updateCounts;
+el("start").onclick = () => begin(selected());
+el("retry").onclick = () => begin(errors);
+el("reset").onclick = () => { show("setup"); updateCounts(); scope.focus(); };
+updateCounts();
+</script>
+</html>

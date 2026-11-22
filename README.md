@@ -18,7 +18,21 @@ Linux 和 macOS 可将上述解释器路径换成 `.venv/bin/python`。首次安
 
 - `output/data-structures/notes.md` 是可直接阅读的复习笔记。每节摘录最前面的两条有效语句。
 - `output/data-structures/cards.json` 是 UTF-8 题库。每张卡的 `source.page` 从 PDF 的第一页起按 1 编号，`source.quote` 保存对应原句并整理换行空白。
+- `output/data-structures/review.html` 是离线自测页。双击即可开始，单独复制给同学也能使用。
 - 转换自己的资料可运行 `python -m paper2cards "课程讲义.pdf" -o "output/课程复习"`，使用安装过本项目的 Python。每次请选择新的输出目录。
+
+## v0.3.0 离线自测
+
+在快速体验的示例中，打开 `review.html`，选择「线性结构」，就能练习关于栈和队列的 4 道题。问答卡先自己作答，点「查看答案」后选「已掌握」或「需重练」。选择题点击选项后立即判分。展开「查看原文」可核对引文和 PDF 物理页码。完成一轮后，点「重练错题」可只练本轮答错和标记需重练的题。进度仅保留在当前页面，刷新会重新开始。
+
+用 v0.1.0 或 v0.2.0 导出的 `cards.json` 也能直接生成自测页。将下面的输入路径换成已有题库，输出指定一个新目录：
+
+```powershell
+.\.venv\Scripts\python -m paper2cards "旧版题库/cards.json" -o "output/旧题自测"
+Start-Process ".\output\旧题自测\review.html"
+```
+
+导入沿用原题、选项与出处，无需原 PDF。生成后的 HTML 内含题库和页面所需资源，可以离线打开。可用仓库中的 `tests/fixtures/v0.1.0-cards.json` 体验旧题导入。
 
 ## v0.2.0 制卡质量
 
@@ -46,7 +60,8 @@ Linux 和 macOS 可将上述解释器路径换成 `.venv/bin/python`。首次安
 | `paper2cards/source.py` | 读取 PDF 书签，保留物理页码与文本 |
 | `paper2cards/extraction.py` | 处理断行，识别正向与反向定义句，过滤教学提示 |
 | `paper2cards/study.py` | 从章节生成结构化笔记、概念和带出处的卡片 |
-| `paper2cards/export.py` | 将同一份学习资料导出成 Markdown 和 JSON |
+| `paper2cards/export.py` | 将笔记、题库和自测页一起写入新目录 |
+| `paper2cards/review.py`、`review.html` | 校验题库，生成可离线使用的单文件自测页 |
 | `paper2cards/cli.py` | 命令行入口与错误提示 |
 | `examples/data-structures.pdf` | 两页可复现的示例输入 |
 | `tests/` | 转换、来源核验和异常输入测试 |

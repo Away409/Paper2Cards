@@ -1,0 +1,171 @@
+{
+  "schema_version": 1,
+  "document": "data-structures.pdf",
+  "sections": [
+    {
+      "title": "线性结构",
+      "first_page": 1,
+      "last_page": 1,
+      "highlights": [
+        {
+          "page": 1,
+          "quote": "栈是仅允许在同一端插入和删除元素的线性表。"
+        },
+        {
+          "page": 1,
+          "quote": "队列是允许在一端插入、另一端删除元素的线性表。"
+        }
+      ],
+      "concepts": [
+        {
+          "term": "栈",
+          "definition": "仅允许在同一端插入和删除元素的线性表。",
+          "source": {
+            "page": 1,
+            "quote": "栈是仅允许在同一端插入和删除元素的线性表。"
+          }
+        },
+        {
+          "term": "队列",
+          "definition": "允许在一端插入、另一端删除元素的线性表。",
+          "source": {
+            "page": 1,
+            "quote": "队列是允许在一端插入、另一端删除元素的线性表。"
+          }
+        }
+      ]
+    },
+    {
+      "title": "树与图",
+      "first_page": 2,
+      "last_page": 2,
+      "highlights": [
+        {
+          "page": 2,
+          "quote": "叶子结点是树中没有孩子的结点。"
+        },
+        {
+          "page": 2,
+          "quote": "无向图是每条边都没有方向的图。"
+        }
+      ],
+      "concepts": [
+        {
+          "term": "叶子结点",
+          "definition": "树中没有孩子的结点。",
+          "source": {
+            "page": 2,
+            "quote": "叶子结点是树中没有孩子的结点。"
+          }
+        },
+        {
+          "term": "无向图",
+          "definition": "每条边都没有方向的图。",
+          "source": {
+            "page": 2,
+            "quote": "无向图是每条边都没有方向的图。"
+          }
+        }
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "kind": "qa",
+      "question": "如何定义「栈」？",
+      "answer": "仅允许在同一端插入和删除元素的线性表。",
+      "source": {
+        "page": 1,
+        "quote": "栈是仅允许在同一端插入和删除元素的线性表。"
+      },
+      "options": []
+    },
+    {
+      "kind": "mcq",
+      "question": "原文中哪个概念对应这段描述？仅允许在同一端插入和删除元素的线性表。",
+      "answer": "栈",
+      "source": {
+        "page": 1,
+        "quote": "栈是仅允许在同一端插入和删除元素的线性表。"
+      },
+      "options": [
+        "栈",
+        "队列",
+        "叶子结点"
+      ]
+    },
+    {
+      "kind": "qa",
+      "question": "如何定义「队列」？",
+      "answer": "允许在一端插入、另一端删除元素的线性表。",
+      "source": {
+        "page": 1,
+        "quote": "队列是允许在一端插入、另一端删除元素的线性表。"
+      },
+      "options": []
+    },
+    {
+      "kind": "mcq",
+      "question": "原文中哪个概念对应这段描述？允许在一端插入、另一端删除元素的线性表。",
+      "answer": "队列",
+      "source": {
+        "page": 1,
+        "quote": "队列是允许在一端插入、另一端删除元素的线性表。"
+      },
+      "options": [
+        "叶子结点",
+        "队列",
+        "无向图"
+      ]
+    },
+    {
+      "kind": "qa",
+      "question": "如何定义「叶子结点」？",
+      "answer": "树中没有孩子的结点。",
+      "source": {
+        "page": 2,
+        "quote": "叶子结点是树中没有孩子的结点。"
+      },
+      "options": []
+    },
+    {
+      "kind": "mcq",
+      "question": "原文中哪个概念对应这段描述？树中没有孩子的结点。",
+      "answer": "叶子结点",
+      "source": {
+        "page": 2,
+        "quote": "叶子结点是树中没有孩子的结点。"
+      },
+      "options": [
+        "栈",
+        "无向图",
+        "叶子结点"
+      ]
+    },
+    {
+      "kind": "qa",
+      "question": "如何定义「无向图」？",
+      "answer": "每条边都没有方向的图。",
+      "source": {
+        "page": 2,
+        "quote": "无向图是每条边都没有方向的图。"
+      },
+      "options": []
+    },
+    {
+      "kind": "mcq",
+      "question": "原文中哪个概念对应这段描述？每条边都没有方向的图。",
+      "answer": "无向图",
+      "source": {
+        "page": 2,
+        "quote": "无向图是每条边都没有方向的图。"
+      },
+      "options": [
+        "无向图",
+        "栈",
+        "队列"
+      ]
+    }
+  ],
+  "skipped_pages": []
+}
