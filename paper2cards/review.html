@@ -113,7 +113,8 @@ function renderCard() {
   el("evidence").open = false;
   el("evidence").hidden = el("grade").hidden = el("next").hidden = true;
   el("citation").textContent = "查看原文 · 第 " + card.page + " 页";
-  el("quote").textContent = card.quote;
+  el("quote").textContent = [card.quote, ...card.additional_sources.map(
+    s => "第 " + s.page + " 页 · " + s.quote)].join("\n\n");
   if (card.kind === "mcq") {
     card.options.forEach((option, i) => {
       const button = document.createElement("button");
