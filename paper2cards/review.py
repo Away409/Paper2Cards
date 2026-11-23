@@ -36,8 +36,15 @@ def _card(card, chapters, end_pages):
         or len(set(options)) != len(options) or answer not in options
     ):
         raise ValueError
+    extra = card.get("additional_sources", [])
+    if not isinstance(extra, (list, tuple)):
+        raise ValueError
+    for source in extra:
+        if (type(source["page"]) is not int or not chapters[chapter]["first"] <= source["page"] <= chapters[chapter]["last"]
+                or not isinstance(source["quote"], str) or not source["quote"].strip()):
+            raise ValueError
     return dict(kind=kind, question=question, answer=answer, options=options,
-                page=page, quote=quote, chapter=chapter)
+                page=page, quote=quote, chapter=chapter, additional_sources=extra)
 
 
 def review_html(data: dict) -> str:

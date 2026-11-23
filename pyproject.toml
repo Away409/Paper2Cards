@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "paper2cards"
-version = "0.3.0"
+version = "0.4.0"
 description = "Turn study PDFs into revision notes and flashcards with page-level evidence."
 readme = "README.md"
 requires-python = ">=3.10"

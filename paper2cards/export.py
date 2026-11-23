@@ -31,6 +31,8 @@ def markdown(study: StudySet) -> str:
         for j, option in enumerate(card.options):
             lines.append(f"- {chr(65 + j)}. {option}")
         lines.extend(["", f"答案：{card.answer}", "", f"> 第 {card.source.page} 页 · {card.source.quote}", ""])
+        for source in getattr(card, "additional_sources", ()):
+            lines.extend([f"> 第 {source.page} 页 · {source.quote}", ""])
     if study.skipped_pages:
         lines.append("未提取到文字的页码：" + "、".join(map(str, study.skipped_pages)))
     return "\n".join(lines).rstrip() + "\n"
