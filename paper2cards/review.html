@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Paper2Cards · 离线自测</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f3f2eb;color:#20352f;font:17px/1.65 "Segoe UI",sans-serif}main{max-width:760px;margin:7vh auto;padding:0 20px}header{border-bottom:2px solid #245348;padding-bottom:12px}h1{margin:0;font-size:1.65rem}#document{overflow-wrap:anywhere;color:#53645d}label{display:block;margin:20px 0 6px}select,button{max-width:100%;font:inherit;border-radius:6px;border:1px solid #71877c;padding:8px 14px;color:inherit;background:white;cursor:pointer}section{background:#fffef9;margin:20px 0;padding:clamp(18px,5vw,40px);border:1px solid #cdd4ca;border-radius:12px;overflow-wrap:anywhere}#progress{color:#48635a}h2{font-size:1.35rem}button{margin:4px 6px 4px 0}button:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #d48224}button.primary{background:#245348;color:white}button:disabled{cursor:default}#feedback{font-weight:600}details{border-top:1px solid #d8ded7;margin-top:18px;padding-top:12px}summary{cursor:pointer}#quote{white-space:pre-wrap}
+</style>
+<main><header><h1>离线自测</h1><div id="document"></div></header>
+<label for="scope">章节</label><select id="scope"><option value="all">全部章节</option></select>
+<section><div id="progress"></div><h2 id="question" tabindex="-1"></h2><div id="choices"></div>
+<p id="feedback" aria-live="polite"></p><div id="actions"></div>
+<details id="source"><summary>查看原文出处</summary><div id="quote"></div></details></section></main>
+<script type="application/json" id="deck">__STUDY_DATA__</script>
+<script>
+"use strict";
+const deck = JSON.parse(document.getElementById("deck").textContent);
+const el = id => document.getElementById(id);
+el("document").textContent = deck.document;
+deck.sections.forEach((s,i) => el("scope").add(new Option(s.title, i)));
+let queue, missed, index;
+function button(parent, label, action, primary=false) {
+  const b = document.createElement("button");
+  b.textContent = label;
+  if (primary) b.className = "primary";
+  b.onclick = action;
+  el(parent).append(b);
+}
+function start(cards) { queue = cards; missed = []; index = 0; render(); }
+function restart() {
+  const s = deck.sections[el("scope").value];
+  start(deck.cards.filter(c => !s || (c.source.page >= s.first_page && c.source.page <= s.last_page)));
+}
+function render() {
+  const c = queue[index];
+  el("actions").replaceChildren();
+  el("choices").replaceChildren();
+  el("feedback").textContent = "";
+  el("source").open = false;
+  el("source").hidden = !c;
+  if (!c) {
+    el("question").textContent = queue.length ? "本轮完成" : "本章节暂无卡片";
+    el("progress").textContent = queue.length ? "答对 " + (queue.length-missed.length) + " / " + queue.length : "";
+    if (missed.length) button("actions", "重练错题（" + missed.length + "）", () => start(missed), true);
+    if (queue.length) button("actions", "重新开始", restart);
+  } else {
+    el("progress").textContent = "第 " + (index+1) + " / " + queue.length + " 题";
+    el("question").textContent = c.question;
+    el("quote").textContent = "第 " + c.source.page + " 页 · " + c.source.quote;
+    const grade = correct => {
+      if (!correct) missed.push(c);
+      el("choices").replaceChildren();
+      el("feedback").textContent = (correct ? "正确" : "待复习") + " · " + c.answer;
+      el("actions").replaceChildren();
+      button("actions", index+1 === queue.length ? "查看结果" : "下一题", () => { index++; render(); }, true);
+    };
+    if (c.kind === "mcq") {
+      c.options.forEach(option => button("choices", option, () => grade(option === c.answer)));
+    } else {
+      button("actions", "翻面看答案", () => {
+        el("feedback").textContent = c.answer;
+        el("actions").replaceChildren();
+        button("actions", "记住了", () => grade(true), true);
+        button("actions", "还需复习", () => grade(false));
+      }, true);
+    }
+  }
+  el("question").focus({preventScroll:true});
+}
+el("scope").onchange = restart;
+restart();
+</script></html>

@@ -20,6 +20,16 @@ Linux 和 macOS 可将上述解释器路径换成 `.venv/bin/python`。首次安
 - `output/data-structures/cards.json` 是 UTF-8 题库。每张卡的 `source.page` 从 PDF 的第一页起按 1 编号，`source.quote` 保存对应原句并整理换行空白。
 - 转换自己的资料可运行 `python -m paper2cards "课程讲义.pdf" -o "output/课程复习"`，使用安装过本项目的 Python。每次请选择新的输出目录。
 
+## v0.3.0 离线自测
+
+转换 PDF 后，双击输出目录中的 `review.html` 即可开始自测。可以把这个文件单独复制到另一台电脑，用浏览器离线打开。选择章节后，问答题可翻面并标记掌握情况，选择题点选后立即判分；每道题都可展开原文和页码。一轮结束后可以只重练错题。切换章节或刷新页面会重新开始。
+
+已有 v0.1.0 或 v0.2.0 的 `cards.json` 也可以直接生成自测页：
+
+```powershell
+python -m paper2cards output/data-structures/cards.json -o output/review-only
+```
+
 ## v0.2.0 制卡质量
 
 用同一份[六页原创讲义](examples/lecture-benchmark.pdf)运行两个版本。第 1 页连续写了「栈是后进先出的线性表」和队列的定义，第一行没有句号。v0.1.0 把两行拼成了一个答案，还把「注意」当作术语。v0.2.0 将两行分别制卡，另从「称没有孩子的结点为叶子结点。」中提取术语「叶子结点」和释义「没有孩子的结点」，三张问答卡均引用第 1 页。
